@@ -2,88 +2,92 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>คำนวณผ่อนโทรศัพท์</title>
+  <title>บ้านเหนือโมบาย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 min-h-screen flex items-center justify-center">
 
-  <div class="w-full max-w-xl bg-white rounded-2xl shadow-lg p-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">
-      โปรแกรมคำนวณผ่อนโทรศัพท์
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 space-y-6">
+    
+    <h1 class="text-2xl font-bold text-center text-slate-800">
+      บ้านเหนือโมบาย
     </h1>
 
-    <!-- Input Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <!-- Input -->
+    <div class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-600 mb-1">ราคาเครื่อง (บาท)</label>
-        <input id="price" type="number" placeholder="เช่น 9900"
-          class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none p-2" />
+        <label class="block text-sm font-medium text-slate-600">ราคาเครื่อง (บาท)</label>
+        <input id="price" type="number"
+          class="w-full mt-1 rounded-lg border border-slate-300 p-2 focus:ring-2 focus:ring-blue-500">
       </div>
+
       <div>
-        <label class="block text-sm font-medium text-gray-600 mb-1">เงินดาวน์ (บาท)</label>
-        <input id="down" type="number" placeholder="เช่น 1800"
-          class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none p-2" />
+        <label class="block text-sm font-medium text-slate-600">เงินดาวน์ (บาท)</label>
+        <input id="down" type="number"
+          class="w-full mt-1 rounded-lg border border-slate-300 p-2 focus:ring-2 focus:ring-blue-500">
       </div>
     </div>
 
     <!-- Result -->
-    <div id="result" class="space-y-3"></div>
+    <div id="result" class="space-y-3 pt-4 border-t hidden"></div>
+
   </div>
 
-  <script>
-    const priceInput = document.getElementById('price');
-    const downInput = document.getElementById('down');
-    const resultDiv = document.getElementById('result');
+<script>
+function roundTen(num) {
+  return Math.round(num / 10) * 10
+}
 
-    const plans = [
-      { months: 2, interest: 0.05 },
-      { months: 3, interest: 0.10 },
-      { months: 4, interest: 0.15 },
-      { months: 5, interest: 0.20 },
-      { months: 6, interest: 0.20 }
-    ];
+function calculate() {
+  const price = Number(document.getElementById('price').value)
+  const down = Number(document.getElementById('down').value)
+  const result = document.getElementById('result')
 
-    function calculate() {
-      const price = parseFloat(priceInput.value);
-      const down = parseFloat(downInput.value);
+  if (!price || down < 0 || down >= price) {
+    result.classList.add('hidden')
+    return
+  }
 
-      if (isNaN(price) || isNaN(down) || price <= down) {
-        resultDiv.innerHTML = '';
-        return;
-      }
+  const principal = price - down
 
-      const principal = price - down;
+  const plans = [
+    { month: 2, rate: 0.05 },
+    { month: 3, rate: 0.10 },
+    { month: 4, rate: 0.15 },
+    { month: 5, rate: 0.20 },
+    { month: 6, rate: 0.20 }
+  ]
 
-      resultDiv.innerHTML = `
-        <div class="bg-blue-50 rounded-xl p-4">
-          <p class="text-sm text-gray-600">ยอดตั้งต้นที่นำไปผ่อน</p>
-          <p class="text-xl font-semibold text-blue-700">${principal.toLocaleString()} บาท</p>
-        </div>
-      `;
+  let html = `
+    <p class="text-sm text-slate-600">
+      ยอดตั้งต้น: <span class="font-semibold">${principal.toLocaleString()}</span> บาท
+    </p>
+  `
 
-      plans.forEach(plan => {
-        const total = principal + principal * plan.interest;
-        const perMonth = total / plan.months;
+  plans.forEach(p => {
+    const total = principal + (principal * p.rate)
+    const perMonth = roundTen(total / p.month)
 
-        resultDiv.innerHTML += `
-          <div class="border rounded-xl p-4 flex justify-between items-center">
-            <div>
-              <p class="font-medium">ผ่อน ${plan.months} งวด</p>
-              <p class="text-sm text-gray-500">ดอกเบี้ย ${plan.interest * 100}%</p>
-            </div>
-            <div class="text-right">
-              <p class="text-lg font-semibold text-gray-800">${perMonth.toLocaleString(undefined,{maximumFractionDigits:2})} บาท</p>
-              <p class="text-xs text-gray-500">ยอดรวม ${total.toLocaleString()} บาท</p>
-            </div>
-          </div>
-        `;
-      });
-    }
+    html += `
+      <div class="flex justify-between bg-slate-50 rounded-lg p-3">
+        <span class="font-medium">${p.month} งวด</span>
+        <span class="text-blue-600 font-semibold">
+          ${perMonth.toLocaleString()} บาท / เดือน
+        </span>
+      </div>
+    `
+  })
 
-    priceInput.addEventListener('input', calculate);
-    downInput.addEventListener('input', calculate);
-  </script>
+  result.innerHTML = html
+  result.classList.remove('hidden')
+}
+
+document.getElementById('price').addEventListener('input', calculate)
+document.getElementById('down').addEventListener('input', calculate)
+</script>
 
 </body>
 </html>
